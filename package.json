@@ -13,6 +13,7 @@
   "dependencies": {
     "@headlessui/react": "^1.7.19",
     "@reduxjs/toolkit": "^2.2.3",
+    "@tailwindcss/aspect-ratio": "^0.4.2",
     "@vitejs/plugin-react-swc": "^3.7.1",
     "apexcharts": "^3.49.1",
     "autoprefixer": "^10.4.20",
@@ -43,7 +44,6 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz"
   },
   "devDependencies": {
-    "@tailwindcss/aspect-ratio": "^0.4.2",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "eslint": "^8.57.0",
