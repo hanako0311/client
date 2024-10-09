@@ -24,6 +24,8 @@ export default function DashItems() {
   const [itemToEdit, setItemToEdit] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [isImageModalOpen, setImageModalOpen] = useState(false);
+  const [currentImageUrl, setCurrentImageUrl] = useState("");
 
   const navigate = useNavigate(); // Use navigate to switch views
 
@@ -38,19 +40,19 @@ export default function DashItems() {
         throw new Error(`Network response was not ok: ${response.statusText}`);
       }
       const data = await response.json();
-
-      // Sort items by dateFound in descending order (newest first)
-      const sortedData = data.sort(
-        (a, b) => new Date(b.dateFound) - new Date(a.dateFound)
-      );
-
-      setItems(sortedData); // Set the sorted items to state
+      console.log("Fetched items:", data);
+      setItems(data);
     } catch (error) {
       console.error("Error fetching items:", error);
       setError(error.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleImageClick = (imageUrl) => {
+    setCurrentImageUrl(imageUrl);
+    setImageModalOpen(true);
   };
 
   // Filter logic with buttons instead of dropdown
@@ -71,6 +73,7 @@ export default function DashItems() {
     try {
       const url = id ? `/api/items/${id}` : "/api/items/save";
       const method = id ? "PUT" : "POST";
+      console.log("Item being saved:", item); // Debugging log to check the item data
       const response = await fetch(url, {
         method,
         headers: {
@@ -224,7 +227,16 @@ export default function DashItems() {
             {filter === "Claimed Items" && (
               <>
                 <Table.HeadCell>Claimant</Table.HeadCell>
+                <Table.HeadCell>Claimant Image</Table.HeadCell>
                 <Table.HeadCell>Claimed Date</Table.HeadCell>
+              </>
+            )}
+
+            {/* Conditionally display Turnover Date and Turnover Person for Unclaimed Items */}
+            {filter === "Unclaimed Items" && (
+              <>
+                <Table.HeadCell>Turnover Date</Table.HeadCell> {/* Added */}
+                <Table.HeadCell>Turnover Person</Table.HeadCell> {/* Added */}
               </>
             )}
 
@@ -243,7 +255,7 @@ export default function DashItems() {
                 <Table.Cell className="px-6 py-4">{item.item}</Table.Cell>
                 <Table.Cell className="px-6 py-4">
                   <img
-                    className="w-24 h-24 object-cover"
+                    className="w-24 h-auto"
                     src={item.imageUrls && item.imageUrls[0]}
                     alt={item.item}
                   />
@@ -264,7 +276,34 @@ export default function DashItems() {
                       {item.claimantName}
                     </Table.Cell>
                     <Table.Cell className="px-6 py-4">
+                      {item.claimantImage && (
+                        <img
+                          src={item.claimantImage}
+                          alt="Claimant"
+                          className="w-16 h-16 rounded-lg"
+                          onClick={() => {
+                            setCurrentImageUrl(item.claimantImage);
+                            setImageModalOpen(true);
+                          }}
+                        />
+                      )}
+                    </Table.Cell>
+                    <Table.Cell className="px-6 py-4">
                       {item.claimedDate}
+                    </Table.Cell>
+                  </>
+                )}
+
+                {/* Render Turnover Date and Turnover Person for Unclaimed Items */}
+                {filter === "Unclaimed Items" && (
+                  <>
+                    <Table.Cell className="px-6 py-4">
+                      {item.turnoverDate
+                        ? new Date(item.turnoverDate).toLocaleDateString()
+                        : "-"}
+                    </Table.Cell>
+                    <Table.Cell className="px-6 py-4">
+                      {item.turnoverPerson || "-"}
                     </Table.Cell>
                   </>
                 )}
@@ -277,6 +316,7 @@ export default function DashItems() {
                         <Button
                           color="blue"
                           onClick={() => {
+                            console.log("Editing item:", item); // Debugging log to check the edited item data
                             setItemToEdit(item);
                             setIsModalOpen(true);
                           }}
@@ -306,6 +346,18 @@ export default function DashItems() {
           </Table.Body>
         </Table>
       </div>
+
+      <Modal show={isImageModalOpen} onClose={() => setImageModalOpen(false)}>
+        <Modal.Header />
+        <Modal.Body>
+          <img
+            src={currentImageUrl}
+            alt="Enlarged claimant"
+            className="w-full h-auto"
+            style={{ maxWidth: "100%" }}
+          />
+        </Modal.Body>
+      </Modal>
 
       <Modal
         show={showDeleteModal}
