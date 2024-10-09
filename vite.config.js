@@ -4,6 +4,8 @@ import react from "@vitejs/plugin-react-swc";
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
+    host: "0.0.0.0", // Bind to all interfaces so Heroku can access it
+    port: process.env.PORT || 3000, // Use the Heroku-provided port or default to 3000 locally
     proxy: {
       "/api": {
         target:
