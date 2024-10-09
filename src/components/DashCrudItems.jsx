@@ -405,8 +405,9 @@ export default function DashCrudItems() {
         </Toast>
       )}
 
-      <div className="p-3 w-full overflow-x-auto flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900 sm:text-2xl dark:text-white">
+      {/* Title Header */}
+      <div className="mb-6 flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
           Items
         </h1>
       </div>

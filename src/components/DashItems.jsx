@@ -51,7 +51,7 @@ export default function DashItems() {
   };
 
   const handleImageClick = (imageUrl) => {
-    setCurrentImageUrl(imageUrl);
+    setSelectedImage(imageUrl);
     setImageModalOpen(true);
   };
 
@@ -73,7 +73,6 @@ export default function DashItems() {
     try {
       const url = id ? `/api/items/${id}` : "/api/items/save";
       const method = id ? "PUT" : "POST";
-      console.log("Item being saved:", item); // Debugging log to check the item data
       const response = await fetch(url, {
         method,
         headers: {
@@ -232,14 +231,6 @@ export default function DashItems() {
               </>
             )}
 
-            {/* Conditionally display Turnover Date and Turnover Person for Unclaimed Items */}
-            {filter === "Unclaimed Items" && (
-              <>
-                <Table.HeadCell>Turnover Date</Table.HeadCell> {/* Added */}
-                <Table.HeadCell>Turnover Person</Table.HeadCell> {/* Added */}
-              </>
-            )}
-
             {/* Conditionally display Actions column for Unclaimed Items */}
             {filter === "Unclaimed Items" && (
               <Table.HeadCell>Actions</Table.HeadCell>
@@ -294,20 +285,6 @@ export default function DashItems() {
                   </>
                 )}
 
-                {/* Render Turnover Date and Turnover Person for Unclaimed Items */}
-                {filter === "Unclaimed Items" && (
-                  <>
-                    <Table.Cell className="px-6 py-4">
-                      {item.turnoverDate
-                        ? new Date(item.turnoverDate).toLocaleDateString()
-                        : "-"}
-                    </Table.Cell>
-                    <Table.Cell className="px-6 py-4">
-                      {item.turnoverPerson || "-"}
-                    </Table.Cell>
-                  </>
-                )}
-
                 {/* Render Actions only for Unclaimed Items */}
                 {filter === "Unclaimed Items" &&
                   item.status === "Available" && (
@@ -316,7 +293,6 @@ export default function DashItems() {
                         <Button
                           color="blue"
                           onClick={() => {
-                            console.log("Editing item:", item); // Debugging log to check the edited item data
                             setItemToEdit(item);
                             setIsModalOpen(true);
                           }}

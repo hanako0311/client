@@ -72,20 +72,15 @@ export default function DashFoundItem() {
       }
       const data = await response.json();
 
-      // Sort items by dateFound in descending order (newest first)
-      const sortedData = data.sort(
-        (a, b) => new Date(b.dateFound) - new Date(a.dateFound)
-      );
-
       // Filter both 'unclaimed' and 'available' items
-      const unclaimedAndAvailableItems = sortedData.filter(
+      const unclaimedAndAvailableItems = data.filter(
         (item) =>
           !item.status || // Show items without a status
           item.status.toLowerCase() === "unclaimed" || // Show unclaimed items
           item.status.toLowerCase() === "available" // Show available items
       );
 
-      setItems(unclaimedAndAvailableItems);
+      setItems(unclaimedAndAvailableItems.reverse());
     } catch (error) {
       console.error("Error fetching items:", error);
     }
@@ -258,12 +253,12 @@ export default function DashFoundItem() {
             className="bg-white border border-gray-200 rounded-lg shadow overflow-hidden dark:bg-gray-800 dark:border-gray-700"
             onClick={() => handleOpenModal(item.id)} // Open modal on click
           >
-            <div className="aspect-w-1 aspect-h-1 w-full h-48 overflow-hidden">
+            <div className="aspect-w-1 aspect-h-1 sm:aspect-w-4 sm:aspect-h-3 w-full overflow-hidden">
               {item.imageUrls && item.imageUrls[0] ? (
                 <img
                   src={item.imageUrls[0]}
                   alt={item.item}
-                  className="object-cover w-full h-full"
+                  className="h-full w-full object-contain object-center"
                   onError={(e) => {
                     e.target.onError = null; // Prevents looping
                     e.target.src = "default-image.png"; // Specify your default image URL here
@@ -273,11 +268,10 @@ export default function DashFoundItem() {
                 <img
                   src="default-image.png" // Specify your default image URL here
                   alt="Default"
-                  className="object-cover w-full h-full"
+                  className="h-full w-full object-cover object-center"
                 />
               )}
             </div>
-
             <div className="px-5 py-4">
               <div className="flex justify-between">
                 <div>
