@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react"; // Use the standard plugin
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -21,7 +21,6 @@ export default defineConfig(({ mode }) => {
       sourcemap: mode === "production" ? false : true, // Disable source maps in production for performance
       outDir: "dist", // Output directory for the build
       rollupOptions: {
-        // Customizing the bundle to exclude unnecessary development code in production
         output: {
           manualChunks(id) {
             if (id.includes("node_modules")) {
