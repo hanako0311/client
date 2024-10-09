@@ -1,151 +1,267 @@
-import React, { useState } from "react";
-import {
-  Modal,
-  Button,
-  Checkbox,
-  Label,
-  TextInput,
-  Datepicker,
-} from "flowbite-react";
+import React, { useState, useEffect } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { Modal, TextInput, Button, Select } from "flowbite-react"; // Import Select component if using flowbite
 
-const FilterModal = ({ show, onClose, onApplyFilters, clearFilters }) => {
-  const [actionFilter, setActionFilter] = useState({
-    found: false,
-    claimed: false,
-    deleted: false,
+const UserModal = ({
+  show,
+  onClose,
+  user,
+  onSave,
+  departments,
+  currentUser,
+}) => {
+  const [localUser, setLocalUser] = useState({
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    username: "",
+    email: "",
+    department: "",
+    role: "staff",
+    password: "",
   });
-  const [itemName, setItemName] = useState("");
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const handleActionChange = (e) => {
-    setActionFilter({
-      ...actionFilter,
-      [e.target.name]: e.target.checked,
-    });
+  useEffect(() => {
+    if (user) {
+      setLocalUser(user);
+    } else {
+      setLocalUser({
+        firstName: "",
+        middleName: "",
+        lastName: "",
+        username: "",
+        email: "",
+        department: "",
+        role: "staff",
+        password: "",
+      });
+    }
+  }, [user]);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
-  const adjustDateForFiltering = (date, adjustByDays = 0) => {
-    const adjustedDate = new Date(date);
-    adjustedDate.setDate(adjustedDate.getDate() + adjustByDays);
-    return adjustedDate;
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setLocalUser((prevUser) => ({ ...prevUser, [id]: value }));
   };
 
-  const handleApplyFilters = () => {
-    // Collect selected actions
-    const selectedActions = [];
-    if (actionFilter.found) selectedActions.push("Found");
-    if (actionFilter.claimed) selectedActions.push("Claimed");
-    if (actionFilter.deleted) selectedActions.push("Deleted");
-
-    const adjustedStartDate = startDate
-      ? adjustDateForFiltering(startDate, -1)
-      : null;
-    const adjustedEndDate = endDate ? adjustDateForFiltering(endDate, 0) : null; // Adjust end date to include entire day
-
-    // Pass all filters
-    onApplyFilters({
-      action: selectedActions,
-      name: itemName.trim() || null,
-      dateRange: [adjustedStartDate, adjustedEndDate],
-    });
-    onClose();
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const validationError = validateRolePermissions();
+    if (validationError) {
+      setErrorMessage(validationError);
+      return;
+    }
+    onSave(localUser);
   };
 
-  const handleClearFilters = () => {
-    setActionFilter({ found: false, claimed: false, deleted: false });
-    setItemName("");
-    setStartDate(null);
-    setEndDate(null);
-    clearFilters();
-    onClose();
+  const validateRolePermissions = () => {
+    if (currentUser.role !== "superAdmin" && localUser.role === "superAdmin") {
+      return "Only superAdmins can assign the superAdmin role.";
+    }
+    if (
+      currentUser.role === "admin" &&
+      (localUser.role === "superAdmin" || localUser.role === "admin")
+    ) {
+      return "Admins cannot assign admin or superAdmin roles.";
+    }
+    return null;
   };
-
-  // Get today's date to disable future dates in the date pickers
-  const today = new Date().toISOString().split("T")[0];
 
   return (
-    <Modal show={show} size="lg" onClose={onClose}>
-      <Modal.Header>Filter by Action</Modal.Header>
+    <Modal show={show} onClose={onClose} size="2xl">
+      <Modal.Header>{user ? "Edit User" : "Add New User"}</Modal.Header>
       <Modal.Body>
-        {/* Action Filter */}
-        <div className="flex flex-col space-y-2">
-          <Label htmlFor="action">Action</Label>
-          <div className="flex space-x-4">
-            <Checkbox
-              id="found"
-              name="found"
-              checked={actionFilter.found}
-              onChange={handleActionChange}
-            />
-            <Label htmlFor="found">Found</Label>
-            <Checkbox
-              id="claimed"
-              name="claimed"
-              checked={actionFilter.claimed}
-              onChange={handleActionChange}
-            />
-            <Label htmlFor="claimed">Claimed</Label>
-            <Checkbox
-              id="deleted"
-              name="deleted"
-              checked={actionFilter.deleted}
-              onChange={handleActionChange}
-            />
-            <Label htmlFor="deleted">Deleted</Label>
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-6 gap-6">
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="firstName"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                First Name
+              </label>
+              <TextInput
+                id="firstName"
+                type="text"
+                placeholder="First Name"
+                value={localUser.firstName}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="middleName"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Middle Name
+              </label>
+              <TextInput
+                id="middleName"
+                type="text"
+                placeholder="Middle Name"
+                value={localUser.middleName}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="lastName"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Last Name
+              </label>
+              <TextInput
+                id="lastName"
+                type="text"
+                placeholder="Last Name"
+                value={localUser.lastName}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="username"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Username
+              </label>
+              <TextInput
+                id="username"
+                type="text"
+                placeholder="Username"
+                value={localUser.username}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="email"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Email
+              </label>
+              <TextInput
+                id="email"
+                type="text"
+                placeholder="Email"
+                value={localUser.email}
+                onChange={handleChange}
+              />
+            </div>
+
+            {/* Department selection using a dropdown */}
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="department"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Department
+              </label>
+              <select
+                id="department"
+                name="department"
+                value={localUser.department}
+                onChange={handleChange}
+                className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              >
+                <option value="" disabled>
+                  Select a department
+                </option>
+                {departments.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="password"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Password
+              </label>
+              <div className="relative">
+                <TextInput
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={localUser.password}
+                  onChange={handleChange}
+                />
+                <div className="absolute inset-y-0 right-3 flex items-center text-sm leading-5">
+                  <button type="button" onClick={togglePasswordVisibility}>
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {currentUser.role === "superAdmin" && (
+              <div className="col-span-6 sm:col-span-3">
+                <label
+                  htmlFor="role"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Role
+                </label>
+                <div className="flex space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      id="role"
+                      name="role"
+                      value="admin"
+                      checked={localUser.role === "admin"}
+                      onChange={handleChange}
+                      className="form-radio"
+                    />
+                    <span className="ml-2">Admin</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      id="role"
+                      name="role"
+                      value="staff"
+                      checked={localUser.role === "staff"}
+                      onChange={handleChange}
+                      className="form-radio"
+                    />
+                    <span className="ml-2">Staff</span>
+                  </label>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
 
-        {/* Item Name Filter */}
-        <div className="flex flex-col space-y-2 mt-4">
-          <Label htmlFor="itemName">
-            Item Name, Location, Department, Category
-          </Label>
-          <TextInput
-            id="itemName"
-            placeholder="Enter item name"
-            value={itemName}
-            onChange={(e) => setItemName(e.target.value)} // Update item name state
-          />
-        </div>
+          {errorMessage && (
+            <div className="mb-4 text-red-500">{errorMessage}</div>
+          )}
+          {successMessage && (
+            <div className="mb-4 text-green-500">{successMessage}</div>
+          )}
 
-        {/* Date Range Filter */}
-        <div className="flex flex-col space-y-2 mt-4">
-          <Label htmlFor="startDate">Start Date</Label>
-          <input
-            type="date"
-            id="startDate"
-            max={endDate} // Disable future dates and dates later than endDate
-            value={startDate || ""} // Use an empty string if no date is selected
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-
-          <Label htmlFor="endDate">End Date</Label>
-          <input
-            type="date"
-            id="endDate"
-            max={today} // Disable future dates
-            value={endDate || ""} // Use an empty string if no date is selected
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </div>
+          <div className="items-center p-6 border-t border-gray-200 rounded-b dark:border-gray-700">
+            <Button
+              type="submit"
+              gradientDuoTone="pinkToOrange"
+              className="w-full"
+            >
+              Save
+            </Button>
+          </div>
+        </form>
       </Modal.Body>
-      <Modal.Footer>
-        <Button
-          onClick={handleApplyFilters}
-          className="bg-red-900 hover:bg-yellow-500 text-white font-bold py-2 px-4 rounded flex items-center"
-        >
-          Apply Filters
-        </Button>
-        <Button color="gray" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button color="red" onClick={handleClearFilters}>
-          Clear Filters
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 };
 
-export default FilterModal;
+export default UserModal;
