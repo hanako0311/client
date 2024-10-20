@@ -11,8 +11,7 @@ import {
 } from "react-icons/hi";
 import { AiOutlineSearch } from "react-icons/ai";
 import UserModal from "../reusable/UserModal"; // Import UserModal
-
-const departments = ["SSG", "SSO", "SSD"];
+import { offices } from "../reusable/constant"; // Import the offices array from Constant.js
 
 export default function DashUsers() {
   const { currentUser } = useSelector((state) => state.user);
@@ -295,7 +294,7 @@ export default function DashUsers() {
         onClose={() => setShowUserModal(false)}
         user={userToEdit}
         onSave={handleUserSave}
-        departments={departments}
+        departments={offices} // Use the offices array from Constant.js
         currentUser={currentUser}
       />
     </div>

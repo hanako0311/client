@@ -56,10 +56,7 @@ export default function DashAnalytics() {
         );
         if (daysAgoFound < 7) {
           foundCounts[daysAgoFound]++;
-          // if (recentFound.length < 5) {
           recentFound.push(item);
-          //   recentFound.sort((a, b) => new Date(b.createdAt || b.dateFound) - new Date(a.createdAt || a.dateFound));
-          // }
         }
 
         recentFound.sort(
@@ -78,10 +75,7 @@ export default function DashAnalytics() {
           );
           if (daysAgoClaimed < 7) {
             claimedCounts[daysAgoClaimed]++;
-            //if (recentClaimed.length < 5) {
             recentClaimed.push(item);
-            //  recentClaimed.sort((a, b) => new Date(b.claimedDate) - new Date(a.claimedDate));
-            //}
           }
         }
 
@@ -97,15 +91,15 @@ export default function DashAnalytics() {
           key: `${item.id}-Found`,
           action: "Found",
           displayDate: new Date(
-            item.createdAt || item.dateFound
+            item.dateFound || item.createdAt
           ).toLocaleDateString(),
           displayTime: new Date(
-            item.createdAt || item.dateFound
+            item.dateFound || item.createdAt
           ).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
           }),
-          sortDate: new Date(item.createdAt || item.dateFound),
+          sortDate: new Date(item.dateFound || item.createdAt),
         });
 
         // Add claimed items with a valid date
@@ -128,15 +122,36 @@ export default function DashAnalytics() {
         }
       });
 
-      // Fetch Historical (Deleted) Items and Merge
+      // Fetch Historical (Deleted) Items and Merge without overwriting "Found"
       const fetchHistoricalItems = async () => {
         const res = await fetch(`/api/items/history`);
         const fetchedHistoricalItems = await res.json();
 
         if (Array.isArray(fetchedHistoricalItems)) {
           fetchedHistoricalItems.forEach((item) => {
+            // Add found items from historical data, if they have a dateFound
+            if (item.dateFound) {
+              modifiedItems.push({
+                ...item,
+                key: `${item.id}-Found`,
+                action: "Found",
+                displayDate: new Date(
+                  item.dateFound || item.createdAt
+                ).toLocaleDateString(),
+                displayTime: new Date(
+                  item.dateFound || item.createdAt
+                ).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                sortDate: new Date(item.dateFound || item.createdAt),
+              });
+            }
+
+            // Add the deleted row separately
             modifiedItems.push({
               ...item,
+              key: `${item.id}-Deleted`,
               action: "Deleted",
               displayDate: new Date(
                 item.updatedAt || item.createdAt
@@ -189,7 +204,7 @@ export default function DashAnalytics() {
 
         modifiedItems = modifiedItems.filter((item) => {
           // Convert displayDate (string) back to a Date object for comparison
-          const itemDate = new Date(item.displayDate); // Convert displayDate (e.g., "09/21/2023") to a Date object
+          const itemDate = new Date(item.displayDate);
 
           // Check if itemDate (parsed from displayDate) is within the range
           return (!start || itemDate >= start) && (!end || itemDate <= end);
@@ -605,7 +620,7 @@ export default function DashAnalytics() {
                   <Table.Cell className="px-2 py-4">
                     {item.turnoverPerson}
                   </Table.Cell>
-                  <Table.Cell className="px-2 py-4">
+                  <Table.Cell className="px-2 py-6">
                     {item.turnoverDate}
                   </Table.Cell>
                 </Table.Row>

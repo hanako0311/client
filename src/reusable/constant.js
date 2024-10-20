@@ -1,4 +1,4 @@
-export const offices = ["SSO", "SSG", "SSD"];
+export const offices = ["SSO", "SSG", "SSD", "CCS", "Elementary", "JHS", "SHS"];
 
 export const categories = [
   "Mobile Phones",
