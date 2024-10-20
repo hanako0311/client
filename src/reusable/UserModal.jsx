@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Modal, TextInput, Button, Select } from "flowbite-react"; // Import Select component if using flowbite
+import { Modal, TextInput, Button } from "flowbite-react";
 
 const UserModal = ({
   show,
@@ -16,8 +16,8 @@ const UserModal = ({
     lastName: "",
     username: "",
     email: "",
-    department: "",
-    role: "staff",
+    department: currentUser.role === "admin" ? currentUser.department : "", // Auto-set department for admin
+    role: currentUser.role === "admin" ? "staff" : "staff", // Admin can only create staff
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -34,8 +34,8 @@ const UserModal = ({
         lastName: "",
         username: "",
         email: "",
-        department: "",
-        role: "staff",
+        department: currentUser.role === "admin" ? currentUser.department : "",
+        role: currentUser.role === "admin" ? "staff" : "staff",
         password: "",
       });
     }
@@ -50,13 +50,47 @@ const UserModal = ({
     setLocalUser((prevUser) => ({ ...prevUser, [id]: value }));
   };
 
+  const handleRadioChange = (e) => {
+    const { name, value } = e.target;
+    setLocalUser((prevUser) => ({ ...prevUser, [name]: value }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    const validationError = validateRolePermissions();
-    if (validationError) {
-      setErrorMessage(validationError);
+
+    // If the current user is an admin, ensure the department stays the same
+    if (currentUser.role === "admin") {
+      localUser.department = currentUser.department; // Enforce the admin's department for staff
+    }
+
+    const { firstName, lastName, username, email, department, password } =
+      localUser;
+
+    // Required fields for both adding and updating
+    if (!firstName || !lastName || !username || !email || !department) {
+      setErrorMessage("All fields are required except password for updates!");
       return;
     }
+
+    // If it's a new user (i.e., no id), require password
+    if (!localUser.id && !password) {
+      setErrorMessage("Password is required for new users!");
+      return;
+    }
+
+    // Validate role permissions using the existing function
+    const roleValidationError = validateRolePermissions();
+    if (roleValidationError) {
+      setErrorMessage(roleValidationError);
+      // Automatically clear the error message after 5 seconds
+      setTimeout(() => {
+        setErrorMessage("");
+      }, 5000);
+
+      return;
+    }
+
+    // Proceed with saving the user (password will be included only if provided)
     onSave(localUser);
   };
 
@@ -154,8 +188,6 @@ const UserModal = ({
                 onChange={handleChange}
               />
             </div>
-
-            {/* Department selection using a dropdown */}
             <div className="col-span-6 sm:col-span-3">
               <label
                 htmlFor="department"
@@ -163,22 +195,35 @@ const UserModal = ({
               >
                 Department
               </label>
-              <select
-                id="department"
-                name="department"
-                value={localUser.department}
-                onChange={handleChange}
-                className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              >
-                <option value="" disabled>
-                  Select a department
-                </option>
-                {departments.map((dept) => (
-                  <option key={dept} value={dept}>
-                    {dept}
-                  </option>
-                ))}
-              </select>
+              {currentUser.role === "superAdmin" ? (
+                // SuperAdmin can edit the department
+                <div className="flex space-x-4">
+                  {departments.map((dept) => (
+                    <label key={dept} className="flex items-center">
+                      <input
+                        type="radio"
+                        id="department"
+                        name="department"
+                        value={dept}
+                        checked={localUser.department === dept}
+                        onChange={handleChange}
+                        className="form-radio"
+                        required
+                      />
+                      <span className="ml-2">{dept}</span>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                // Admin can only view the department (read-only)
+                <TextInput
+                  id="department"
+                  type="text"
+                  value={currentUser.department} // Admin's department is automatically set
+                  readOnly
+                  disabled
+                />
+              )}
             </div>
 
             <div className="col-span-6 sm:col-span-3">
@@ -186,7 +231,7 @@ const UserModal = ({
                 htmlFor="password"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
-                Password
+                Password {localUser.id ? "(Update)" : "(Required)"}
               </label>
               <div className="relative">
                 <TextInput
@@ -195,6 +240,7 @@ const UserModal = ({
                   placeholder="Password"
                   value={localUser.password}
                   onChange={handleChange}
+                  required={!localUser.id} // Required only for new users (when no id exists)
                 />
                 <div className="absolute inset-y-0 right-3 flex items-center text-sm leading-5">
                   <button type="button" onClick={togglePasswordVisibility}>
@@ -220,7 +266,7 @@ const UserModal = ({
                       name="role"
                       value="admin"
                       checked={localUser.role === "admin"}
-                      onChange={handleChange}
+                      onChange={handleRadioChange}
                       className="form-radio"
                     />
                     <span className="ml-2">Admin</span>
@@ -232,7 +278,7 @@ const UserModal = ({
                       name="role"
                       value="staff"
                       checked={localUser.role === "staff"}
-                      onChange={handleChange}
+                      onChange={handleRadioChange}
                       className="form-radio"
                     />
                     <span className="ml-2">Staff</span>
@@ -241,14 +287,12 @@ const UserModal = ({
               </div>
             )}
           </div>
-
           {errorMessage && (
             <div className="mb-4 text-red-500">{errorMessage}</div>
           )}
           {successMessage && (
             <div className="mb-4 text-green-500">{successMessage}</div>
           )}
-
           <div className="items-center p-6 border-t border-gray-200 rounded-b dark:border-gray-700">
             <Button
               type="submit"
