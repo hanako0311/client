@@ -26,6 +26,8 @@ export default function CreateLostFoundPost() {
     imageUrls: [],
     department: currentUser?.department,
     userRef: currentUser?.id,
+    foundByName: "", // Field for the person who found the item
+    staffInvolved: "", // Text field for staff involved
   });
   const [imageUploadError, setImageUploadError] = useState(false);
   const [reportSubmitError, setReportSubmitError] = useState(null);
@@ -305,6 +307,26 @@ export default function CreateLostFoundPost() {
             />
           </div>
         </div>
+        <div className="flex-auto sm:flex-row sm:items-center sm:justify-between">
+          <TextInput
+            type="text"
+            placeholder="Name of the person who found the item"
+            required
+            name="foundByName"
+            onChange={handleChange}
+            value={formData.foundByName}
+          />
+        </div>
+        <div className="flex-auto sm:flex-row sm:items-center sm:justify-between">
+          <TextInput
+            type="text"
+            placeholder="Enter staff name"
+            required
+            name="staffInvolved"
+            onChange={handleChange}
+            value={formData.staffInvolved}
+          />
+        </div>
         <textarea
           className="block w-full p-2.5 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
           placeholder="Describe the item..."
@@ -402,4 +424,3 @@ export default function CreateLostFoundPost() {
     </div>
   );
 }
-  
