@@ -319,21 +319,22 @@ export default function DashItems() {
                 className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600"
               >
                 <Table.Cell className="px-6 py-4">{item.item}</Table.Cell>
-                <Table.Cell className="px-6 py-4">
+                <Table.Cell className="px-1 py-4">
                   {item.imageUrls && item.imageUrls[0] ? (
                     <img
                       src={item.imageUrls[0]}
                       alt={item.item}
-                      className="w-24 h-24 rounded-md object-cover object-center"
+                      className="w-24 h-24 rounded-md  object-center" // Increased size and added object-contain
                     />
                   ) : (
                     <img
                       src="/default-image.png"
                       alt="Default"
-                      className="w-24 h-24 rounded-md object-cover object-center"
+                      className="w-24 h-24 rounded-md  object-center" // Increased size and added object-contain
                     />
                   )}
                 </Table.Cell>
+
                 <Table.Cell className="px-6 py-4">
                   {item.description}
                 </Table.Cell>
