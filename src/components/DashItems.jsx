@@ -352,10 +352,10 @@ export default function DashItems() {
                   {item.department || "-"}
                 </Table.Cell>
                 <Table.Cell className="px-6 py-4">
-                  {item.foundByName || "N/A"}
+                  {item.foundByName || "-"}
                 </Table.Cell>
                 <Table.Cell className="px-6 py-4">
-                  {item.staffInvolved || "N/A"}
+                  {item.staffInvolved || "-"}
                 </Table.Cell>
 
                 {/* Turnover Date */}
@@ -366,12 +366,12 @@ export default function DashItems() {
                         month: "long",
                         day: "numeric",
                       })
-                    : "N/A"}
+                    : "-"}
                 </Table.Cell>
 
                 {/* Turnover Person */}
                 <Table.Cell className="px-6 py-4">
-                  {item.turnoverPerson || "N/A"}
+                  {item.turnoverPerson || "-"}
                 </Table.Cell>
 
                 {filter === "Claimed Items" && (
